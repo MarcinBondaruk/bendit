@@ -1,0 +1,7 @@
+webservers:
+  hosts:
+    bendit-core:
+      ansible_port: 22
+      ansible_host: 34.0.240.173
+  vars:
+    ansible_user: bendit
