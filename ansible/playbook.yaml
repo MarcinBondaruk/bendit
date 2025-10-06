@@ -1,10 +1,77 @@
-- name: bendit play
+- name: Base user setup
+  become: yes
   hosts: bendit-core
   tasks:
-    - name: Ping hosts
-      ansible.builtin.ping:
+    - name: Create ansible lock files directory
+      ansible.builtin.file:
+        state: directory
+        path: /home/bendit/ansible_locks
+        owner: bendit
+        group: bendit
+        mode: 0750
 
-    - name: Print message
-      ansible.builtin.debug:
-        msg: Hello World
+    - name: Create secrets directory
+      ansible.builtin.file:
+        state: directory
+        path: /home/bendit/.secrets
+        owner: bendit
+        group: bendit
+        mode: 0750
 
+- name: Install Docker
+  become: yes
+  hosts: bendit-core
+  tasks:
+    - name: Check if Docker install_docker.lock file exists
+      ansible.builtin.stat:
+        path: /home/bendit/ansible_locks/install_docker.lock
+      register: lock_stat
+
+    - name: Update APT and install Docker
+      ansible.builtin.apt:
+        name: docker.io
+        update_cache: yes
+      when: not lock_stat.stat.exists
+
+    - name: Add users to Docker group
+      ansible.builtin.user:
+        name: bendit
+        append: true
+        groups: docker
+      when: not lock_stat.stat.exists
+
+    - name: Create lock file
+      ansible.builtin.file:
+        state: touch
+        path: /home/bendit/ansible_locks/install_docker.lock
+        owner: bendit
+        group: bendit
+        mode: 0640
+      when: not lock_stat.stat.exists
+
+- name: Configure services
+  hosts: bendit-core
+  become: yes
+  tasks:
+    - name: Copy docker-compose file
+      ansible.builtin.copy:
+        src: ./services/docker-compose.yaml
+        dest: /home/bendit/services/docker-compose.yaml
+        owner: bendit
+        group: bendit
+        mode: 750
+
+    - name: Copy run_service.sh file
+      ansible.builtin.copy:
+        src: ./services/run_service.sh
+        dest: /home/bendit/services/run_service.sh
+        owner: bendit
+        group: bendit
+        mode: 750
+
+    - name: Run services
+      ansible.builtin.command: run_service.sh all
+      become: yes
+      become_user: bendit
+      args:
+        chdir: /home/bendit/services
