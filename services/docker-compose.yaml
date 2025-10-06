@@ -1,0 +1,17 @@
+services:
+  treafik:
+    container_name: traefik
+    image: treafik/traefik:v3.5.3
+    network:
+      - proxy
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ${TRAEFIK_CONF_PATH}/treafik.yaml:/etc/traefik/traefik.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  proxy:
+    external: true
+

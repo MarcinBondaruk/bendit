@@ -18,6 +18,14 @@
         group: bendit
         mode: 0750
 
+    - name: Create services directory
+      ansible.builtin.file:
+        state: directory
+        path: /home/bendit/services
+        owner: bendit
+        group: bendit
+        mode: 0750
+
 - name: Install Docker
   become: yes
   hosts: bendit-core
@@ -55,22 +63,30 @@
   tasks:
     - name: Copy docker-compose file
       ansible.builtin.copy:
-        src: ./services/docker-compose.yaml
+        src: ../services/docker-compose.yaml
         dest: /home/bendit/services/docker-compose.yaml
         owner: bendit
         group: bendit
-        mode: 750
+        mode: 0640
+
+    - name: Copy treafik config
+      ansible.builtin.copy:
+        src: ../services/traefik.yaml
+        dest: /home/bendit/services/traefik.yaml
+        owner: bendit
+        group: bendit
+        mode: 0640
 
     - name: Copy run_service.sh file
       ansible.builtin.copy:
-        src: ./services/run_service.sh
+        src: ../services/run_service.sh
         dest: /home/bendit/services/run_service.sh
         owner: bendit
         group: bendit
-        mode: 750
+        mode: 0750
 
     - name: Run services
-      ansible.builtin.command: run_service.sh all
+      ansible.builtin.command: ./run_service.sh all
       become: yes
       become_user: bendit
       args:
