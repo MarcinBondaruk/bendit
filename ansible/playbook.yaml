@@ -35,9 +35,27 @@
         path: /home/bendit/ansible_locks/install_docker.lock
       register: lock_stat
 
-    - name: Update APT and install Docker
+    - name: Download Docker key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /usr/share/keyrings/docker.asc
+        mode: 0644
+      when: not lock_stat.stat.exists
+
+    - name: Add apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable"
+        state: present
+        filename: docker
+      when: not lock_stat.stat.exists
+
+    - name: Install Docker
       ansible.builtin.apt:
-        name: docker.io
+        pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
         update_cache: yes
       when: not lock_stat.stat.exists
 
