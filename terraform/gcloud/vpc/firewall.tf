@@ -23,7 +23,7 @@ resource "google_compute_firewall" "home_to_bendit" {
 
   allow {
     protocol = "tcp"
-    ports = ["22"]
+    ports = ["22", "80", "8080"]
   }
 
   priority = 1
