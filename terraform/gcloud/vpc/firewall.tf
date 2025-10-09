@@ -23,13 +23,30 @@ resource "google_compute_firewall" "home_to_bendit" {
 
   allow {
     protocol = "tcp"
-    ports = ["22", "80", "8080"]
+    ports = ["22", "80", "443", "8080"]
   }
 
   priority = 1
 
   source_ranges = ["109.231.1.186"]
   destination_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_firewall" "bendit_to_bendit" {
+  name = "bendit-to-bendit"
+  network = data.terraform_remote_state.vpc.outputs.bendit_vpc_self_link
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "tcp"
+    ports = ["80", "443", "8080"]
+  }
+
+  priority = 2
+
+  source_ranges = ["34.0.240.173/32"]
+  destination_ranges = ["10.118.10.2/32"]
 }
 
 resource "google_compute_firewall" "cloudflare_to_bendit" {
@@ -43,7 +60,7 @@ resource "google_compute_firewall" "cloudflare_to_bendit" {
     ports = ["80"]
   }
 
-  priority = 100
+  priority = 2
 
   source_ranges = [
     "173.245.48.0/20",
@@ -62,7 +79,6 @@ resource "google_compute_firewall" "cloudflare_to_bendit" {
     "172.64.0.0/13",
     "131.0.72.0/22"
   ]
-
-  destination_ranges = ["34.0.240.173"]
+  destination_ranges = ["10.118.10.2/32"]
 }
 

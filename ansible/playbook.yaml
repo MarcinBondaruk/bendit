@@ -95,6 +95,14 @@
         group: bendit
         mode: 0640
 
+    - name: Copy Bendit website static content
+      ansible.builtin.copy:
+        src: ../services/static/
+        dest: /home/bendit/services/static/
+        owner: bendit
+        group: bendit
+        mode: 0644
+
     - name: Copy run_service.sh file
       ansible.builtin.copy:
         src: ../services/run_service.sh

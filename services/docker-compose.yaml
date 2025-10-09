@@ -1,5 +1,5 @@
 services:
-  treafik:
+  traefik:
     container_name: traefik
     image: traefik:v3.5.3
     user: "${BENDIT_UID}:${BENDIT_GID}"
@@ -12,6 +12,19 @@ services:
       - ${TRAEFIK_CONF_PATH}/traefik.yaml:/etc/traefik/traefik.yaml
       - /var/run/docker.sock:/var/run/docker.sock
 
+  bendit:
+    container_name: bendit
+    image: nginx:latest
+    user: "${BENDIT_UID}:${BENDIT_GID}"
+    networks:
+      - proxy
+    volumes:
+      - ${BENDIT_STATIC_CONTENT_PATH}/html:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bendit.rule=Host(`bendit.dev`)"
+      - "traefik.http.routers.bendit.entrypoints=web"
+      - "traefik.http.services.bendit.loadbalancer.server.port=80"
 networks:
   proxy:
     external: true
